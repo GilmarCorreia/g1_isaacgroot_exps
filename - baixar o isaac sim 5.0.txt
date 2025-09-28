@@ -1,0 +1,18 @@
+- baixar o isaac sim 5.0 
+- baixar o cuda toolkit 12.4
+
+instalando o groot
+
+setx conda "C:\ProgramData\anaconda3\condabin\conda.bat"
+refreshenv
+%conda% create -n gr00t python=3.10
+%conda% activate gr00t
+pip install --upgrade setuptools
+pip install -e .[base]
+pip install torch
+setx CUDA_HOME "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2"
+pip install --no-build-isolation flash-attn==2.7.1.post4 
+
+- baixar o chocolatey 
+- choco upgrade chocolatey -y
+- passos de instalação dop ros HUmble no windows
