@@ -1,3 +1,8 @@
-[submodule "Isaac-GR00T"]
-	path = Isaac-GR00T
-	url = https://github.com/NVIDIA/Isaac-GR00T
+[submodule "modules/Isaac-GR00T"]
+	path = modules/Isaac-GR00T
+	url = https://github.com/NVIDIA/Isaac-GR00T.git
+	branch = main
+[submodule "modules/unitree_ros"]
+	path = modules/unitree_ros
+	url = https://github.com/unitreerobotics/unitree_ros.git
+	branch = master
