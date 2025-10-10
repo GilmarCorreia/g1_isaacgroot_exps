@@ -125,9 +125,19 @@ conda activate gr00t
 pip install --upgrade setuptools
 pip install -e .[base]
 pip install torch
-pip install --no-build-isolation flash-attn==2.7.1.post4 
-pip install catkin_pkg
+pip install --no-build-isolation flash-attn==2.7.1.post4
+pip install json_numpy uvicorn fastapi
 ```
+
+#### 1.1.5. ROS2 Build Pkg
+
+```bash
+conda deactivate
+conda deactivate
+cd $ISAAC_WS
+colcon build
+```
+
 
 ### 1.2. Ambiente Docker
 
@@ -137,16 +147,26 @@ Em desenvolvimento.
 
 ## 3. Exemplos
 
+python scripts/inference_service.py --model-path nvidia/GR00T-N1.5-3B --data_config unitree_g1_full_body --http_server --server
+
+ros2 run g1_isaacgroot_exps gr00t_bridge.py
+
 ## ?. Referências
 
 https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html
+
 https://github.com/NVIDIA/Isaac-GR00T/tree/main
+
 https://forums.developer.nvidia.com/t/livox-mid360/283074/6
+
 https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/tutorial_ros2_rtx_lidar.html
+
 https://docs.isaacsim.omniverse.nvidia.com/5.0.0/robot_setup_tutorials/tutorial_gui_simple_robot.html
+
 https://reliablerobotics.ai/wp-content/uploads/2025/03/G1-User-Manual_compressed.pdf
+
 https://docs.isaacsim.omniverse.nvidia.com/latest/assets/usd_assets_camera_depth_sensors.html
+
 https://github.com/unitreerobotics/unitree_ros/tree/master
+
 https://sensorlab.arizona.edu/sites/default/files/2023-07/Quick%20Start%20Guide.pdf
-
-
