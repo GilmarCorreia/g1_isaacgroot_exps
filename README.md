@@ -134,6 +134,7 @@ pip install json_numpy uvicorn fastapi
 ```bash
 conda deactivate
 conda deactivate
+python3 -m pip install --break-system-packages json_numpy
 cd $ISAAC_WS
 colcon build
 ```
@@ -150,6 +151,8 @@ Em desenvolvimento.
 python scripts/inference_service.py --model-path nvidia/GR00T-N1.5-3B --data_config unitree_g1_full_body --http_server --server
 
 ros2 run g1_isaacgroot_exps gr00t_bridge.py
+
+ros2 topic pub /groot_command std_msgs/msg/String "{ data: 'move the right arm'} " --once
 
 ## ?. Referências
 
