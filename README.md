@@ -34,9 +34,10 @@ Create a workspace folder and clone this repository inside it:
 cd $HOME/Desktop
 mkdir -p isaac_ws/src
 cd isaac_ws/src
-git clone <repository_link>
+git clone https://github.com/GilmarCorreia/g1_isaacgroot_exps.git
 
 cd g1_isaacgroot_exps
+./init_submodules.sh
 mkdir downloads
 ```
 
@@ -181,6 +182,15 @@ ROS 2 topics were created to bridge Isaac Sim with the robot’s actuators and s
   <img src="images/rviz.png" alt="RViz Visualization">
 </p>
 
+To visualize the robot and its sensor data inside RViz, run:
+
+```bash
+conda deactivate
+conda deactivate
+cd $ISAAC_WS/src/g1_isaacgroot_exps
+./launch.sh
+```
+
 A simplified bridge was implemented to communicate robot state and control commands with **Isaac Gr00t**, exposing ROS 2 interfaces for joint control, camera feedback, and high-level task instructions.
 
 The central component of this architecture is the `gr00t_bridge.py` script, which connects **ROS 2**, **Isaac Gr00t**, and the **Unitree G1** simulation within Isaac Sim, enabling bidirectional communication for natural language–based robot commands.
@@ -207,6 +217,7 @@ Open a terminal and run:
 
 ```bash
 conda activate gr00t
+cd $ISAAC_WS/src/g1_isaacgroot_exps/modules/Isaac_GR00T
 python scripts/inference_service.py --model-path nvidia/GR00T-N1.5-3B --data_config unitree_g1_full_body --http_server --server
 ```
 
