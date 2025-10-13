@@ -1,0 +1,10 @@
+# Goal
+string instruction
+
+---
+# Result
+bool success
+
+---
+# Feedback
+string status

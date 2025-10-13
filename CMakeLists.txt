@@ -11,6 +11,13 @@ find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
 
+find_package(rosidl_default_generators REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/Instruction.action"
+  DEPENDENCIES builtin_interfaces
+)
+
 install(
   DIRECTORY launch models worlds
   DESTINATION share/${PROJECT_NAME}

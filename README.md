@@ -11,6 +11,7 @@ O objetivo desse repositório é realizar a integração e controle via NVIDIA I
 - Anaconda para inicialização do ambiente virtual.
 - Python 3.10
 - ROS 2 Jazzy
+- RTX 3080
 
 ## 1. Instalação
 
@@ -139,7 +140,6 @@ cd $ISAAC_WS
 colcon build
 ```
 
-
 ### 1.2. Ambiente Docker
 
 Em desenvolvimento.
@@ -152,7 +152,7 @@ python scripts/inference_service.py --model-path nvidia/GR00T-N1.5-3B --data_con
 
 ros2 run g1_isaacgroot_exps gr00t_bridge.py
 
-ros2 topic pub /groot_command std_msgs/msg/String "{ data: 'move the right arm'} " --once
+ros2 action send_goal /groot_command g1_isaacgroot_exps/action/Instruction "{instruction: 'grab the apple'}"
 
 ## ?. Referências
 
