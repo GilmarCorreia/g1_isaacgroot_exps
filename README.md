@@ -1,51 +1,63 @@
 # G1_IsaacGroot_Exps
 
-Humanoid Robotics Engineer - Technical Challenge - Generalist Behavior via NVIDIA Isaac Gr00t N1.5
+**Humanoid Robotics Engineer – Technical Challenge: Generalist Behavior via NVIDIA Isaac Gr00t N1.5**
 
-O objetivo desse repositório é realizar a integração e controle via NVIDIA Isaac Gr00t com o humanoide unitree G1. No primeiro momento foi escolhido a seguinte pilha tecnológica:
+This repository aims to integrate and control the **Unitree G1 humanoid robot** through **NVIDIA Isaac Gr00t N1.5**, leveraging the **Isaac Sim 5.0** simulation environment and **ROS 2 Jazzy** middleware.
 
-- Ubuntu 24.02
-- Isaac Sim 5.0
-- Isaac Gr00t N1.5
-- Cuda Toolkit 12.8
-- Anaconda para inicialização do ambiente virtual.
-- Python 3.10
-- ROS 2 Jazzy
-- RTX 3080
+The following technology stack was used:
 
-## 1. Instalação
+* Ubuntu 24.04
+* Isaac Sim 5.0
+* Isaac Gr00t N1.5
+* CUDA Toolkit 12.8
+* Anaconda (for virtual environment management)
+* Python 3.10
+* ROS 2 Jazzy
+* NVIDIA RTX 3080 GPU
 
-Escolha uma das opções a seguir para prosseguir com a instalação:
+---
 
-1.1. Configuração Local
-1.2. Ambiente Docker
+## 1. Installation
 
-### 1.1. Configuração Local
+Choose one of the following setup options:
 
-Crie uma pasta e baixe esse repositório para dentro dessa pasta seguindo as seguintes configurações:
+[1.1. Local Configuration](#11-local-configuration)  
+[1.2. Docker Environment](#12-docker-environment)
+
+--- 
+
+### 1.1. Local Configuration
+
+Create a workspace folder and clone this repository inside it:
 
 ```bash
 cd $HOME/Desktop
 mkdir -p isaac_ws/src
 cd isaac_ws/src
-git clone link_do_repo
+git clone <repository_link>
 
 cd g1_isaacgroot_exps
 mkdir downloads
+```
 
+Add the following environment variables to your shell:
+
+```bash
 isaac_text="
-# Isaac Tests
+# Isaac Workspace Setup
 export ISAAC_WS=$HOME/Desktop/isaac_ws
 export ISAAC_EXPS=$HOME/Desktop/isaac_ws/src/g1_isaacgroot_exps
 "
-
 sudo echo "$isaac_text" >> ~/.bashrc
 source ~/.bashrc
 ```
 
-#### 1.1.1. ROS Jazzy
+#### 1.1.1. ROS 2 Jazzy
 
-Instale o ROS2 versão jazzy no seu sistema operacional, para isso execute os comandos disponibilizados em https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html. Os comandos foram copiados para cá:
+Install **ROS 2 Jazzy** following the official guide:
+👉 [https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html)
+
+For convenience, the main commands are included below:
 
 ```bash
 sudo apt install software-properties-common
@@ -55,25 +67,29 @@ export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrast
 curl -L -o /tmp/ros2-apt-source.deb "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.$(. /etc/os-release && echo ${UBUNTU_CODENAME:-${VERSION_CODENAME}})_all.deb"
 sudo dpkg -i /tmp/ros2-apt-source.deb
 sudo apt update && sudo apt install ros-dev-tools
-sudo apt update
-sudo apt upgrade
 sudo apt install ros-jazzy-desktop ros-jazzy-xacro ros-jazzy-joint-state-publisher-gui
+```
 
+Then, add the following environment configuration:
+
+```bash
 ros_text="
-# ROS Jazzy
+# ROS 2 Jazzy
 source /opt/ros/jazzy/setup.bash
 source $ISAAC_WS/install/setup.bash
 export ROS_DISTRO=jazzy
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 "
-
 sudo echo "$ros_text" >> ~/.bashrc
 source ~/.bashrc
-``` 
+```
 
 #### 1.1.2. Isaac Sim 5.0
 
-Instalar o Isaac Sim 5.0 no seguinte link https://download.isaacsim.omniverse.nvidia.com/isaac-sim-standalone-5.0.0-linux-x86_64.zip, descompacte a pasta e altere as variáveis de ambiente do sistema:
+Download and install **Isaac Sim 5.0** from the following link:
+👉 [https://download.isaacsim.omniverse.nvidia.com/isaac-sim-standalone-5.0.0-linux-x86_64.zip](https://download.isaacsim.omniverse.nvidia.com/isaac-sim-standalone-5.0.0-linux-x86_64.zip)
+
+Then extract and configure the environment:
 
 ```bash
 cd $ISAAC_EXPS/downloads
@@ -85,17 +101,14 @@ isaac_sim_text="
 export isaac_sim_package_path=$ISAAC_EXPS/downloads/isaac-sim-standalone-5.0.0-linux-x86_64
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$isaac_sim_package_path/exts/isaacsim.ros2.bridge/jazzy/lib
 "
-
 sudo echo "$isaac_sim_text" >> ~/.bashrc
 source ~/.bashrc
-``` 
+```
 
 #### 1.1.3. CUDA Toolkit 12.8
 
-Algum texto
-
-https://developer.nvidia.com/cuda-12-8-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=24.04&target_type=deb_local
-
+Install **CUDA Toolkit 12.8** following the official instructions:
+👉 [https://developer.nvidia.com/cuda-12-8-0-download-archive](https://developer.nvidia.com/cuda-12-8-0-download-archive)
 
 ```bash
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-ubuntu2404.pin
@@ -108,17 +121,17 @@ sudo apt-get -y install cuda-toolkit-12-8
 sudo apt-get install -y nvidia-open
 ```
 
-#### 1.1.4. Anaconda env
+#### 1.1.4. Anaconda Environment
 
-Instale o Anaconda para inicializar ambientes pré-configurados.
+Install **Anaconda** to manage Python environments:
 
 ```bash
 cd $ISAAC_EXPS/downloads
 wget https://repo.anaconda.com/archive/Anaconda3-2025.06-0-Linux-x86_64.sh
-./Anaconda3-2025.06-0-Linux-x86_64.sh 
+./Anaconda3-2025.06-0-Linux-x86_64.sh
 ```
 
-Siga as configurações para montar o ambiente. Crie o ambiente o gr00t:
+Then, create and configure the environment for **Isaac Gr00t**:
 
 ```bash
 conda create -n gr00t python=3.10
@@ -130,7 +143,9 @@ pip install --no-build-isolation flash-attn==2.7.1.post4
 pip install json_numpy uvicorn fastapi
 ```
 
-#### 1.1.5. ROS2 Build Pkg
+#### 1.1.5. ROS 2 Package Build
+
+Build the ROS 2 package and install dependencies:
 
 ```bash
 conda deactivate
@@ -140,36 +155,155 @@ cd $ISAAC_WS
 colcon build
 ```
 
-### 1.2. Ambiente Docker
+---
 
-Em desenvolvimento.
+### 1.2. Docker Environment
 
-## 2. Montagem do Cenário e Configurações do Robô
+*In development.*
 
-## 3. Exemplos
+---
 
+## 2. Scene Setup and Robot Configuration
+
+The **Isaac Sim 5.0** environment was used to simulate the humanoid robot and its surroundings, leveraging NVIDIA’s provided assets for both the robot and environment.
+
+<p align="center">
+  <img src="images/scene.png" alt="Simulation Scene">
+</p>
+
+ROS 2 topics were created to bridge Isaac Sim with the robot’s actuators and sensors, including:
+
+* `joint_state` and `joint_command` for motor control
+* RGB and depth camera image topics
+* LIDAR topic for environmental mapping
+
+<p align="center">
+  <img src="images/rviz.png" alt="RViz Visualization">
+</p>
+
+A simplified bridge was implemented to communicate robot state and control commands with **Isaac Gr00t**, exposing ROS 2 interfaces for joint control, camera feedback, and high-level task instructions.
+
+The central component of this architecture is the `gr00t_bridge.py` script, which connects **ROS 2**, **Isaac Gr00t**, and the **Unitree G1** simulation within Isaac Sim, enabling bidirectional communication for natural language–based robot commands.
+
+---
+
+## 3. Examples
+
+Data streams such as joint positions and RGB camera output are visualized as shown below:
+
+<p align="center">
+  <img src="images/vision_sensor.png" alt="Vision Sensor Output">
+</p>
+
+<p align="center">
+  <img src="images/interaction.png" alt="Robot Interaction Example">
+</p>
+
+### Execution
+
+1. **Start Isaac Sim** with the scene located at: `g1_isaacgroot_exps/worlds/simple_room_G1_test.usd`
+
+Open a terminal and run:
+
+```bash
+conda activate gr00t
 python scripts/inference_service.py --model-path nvidia/GR00T-N1.5-3B --data_config unitree_g1_full_body --http_server --server
+```
 
+2. **Start the ROS 2 Bridge:** In another terminal, run:
+
+```bash
+conda deactivate
+conda deactivate
 ros2 run g1_isaacgroot_exps gr00t_bridge.py
+```
 
+3. **Send high-level commands to the robot:** In another terminal, use the following command to instruct the robot:
+
+```bash
+conda deactivate
+conda deactivate
 ros2 action send_goal /groot_command g1_isaacgroot_exps/action/Instruction "{instruction: 'grab the apple'}"
+```
 
-## ?. Referências
+Observe the corresponding motion and interaction within Isaac Sim.
 
-https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html
+---
 
-https://github.com/NVIDIA/Isaac-GR00T/tree/main
+## 4. Project Architecture
 
-https://forums.developer.nvidia.com/t/livox-mid360/283074/6
+The system integrates multiple components across simulation, control, and inference, forming a complete humanoid behavior loop.
 
-https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/tutorial_ros2_rtx_lidar.html
+```
+┌──────────────────────────────┐
+│        User / Operator       │
+│ (Sends natural language cmd) │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│   ROS 2 Action Client Node   │
+│  (/groot_command interface)  │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│        GR00T Bridge          │
+│ (gr00t_bridge.py)            │
+│ - Receives high-level goals  │
+│ - Publishes ROS2 commands    │
+│ - Subscribes to joint states │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│      Isaac Gr00t Engine      │
+│ (LLM-based reasoning model)  │
+│ - Interprets user intents    │
+│ - Generates robot actions    │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│        Isaac Sim 5.0         │
+│ (Unitree G1 Simulation)      │
+│ - Executes joint commands    │
+│ - Publishes sensor data      │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│          ROS 2 Layer         │
+│ - Topics: /joint_state, /cmd │
+│ - Bridges Isaac <-> Gr00t    │
+└──────────────────────────────┘
+```
 
-https://docs.isaacsim.omniverse.nvidia.com/5.0.0/robot_setup_tutorials/tutorial_gui_simple_robot.html
+This architecture allows **bidirectional communication** between simulation and the AI reasoning layer (Isaac Gr00t), enabling a humanoid robot to interpret natural language commands and execute complex behaviors in simulation.
 
-https://reliablerobotics.ai/wp-content/uploads/2025/03/G1-User-Manual_compressed.pdf
+The `gr00t_bridge.py` node acts as the **ROS 2 middleware bridge**, translating between the **Isaac Gr00t inference server** and **ROS 2 topics/actions** that control the Unitree G1 humanoid in real time.
 
-https://docs.isaacsim.omniverse.nvidia.com/latest/assets/usd_assets_camera_depth_sensors.html
+---
 
-https://github.com/unitreerobotics/unitree_ros/tree/master
+## 5. Hardware Considerations
 
-https://sensorlab.arizona.edu/sites/default/files/2023-07/Quick%20Start%20Guide.pdf
+The experiments presented in this project were conducted using an **NVIDIA RTX 3080 GPU (10 GB VRAM)**.
+
+While this configuration supports **Isaac Sim** and basic **inference with Isaac Gr00t**, it **does not provide sufficient memory** for **fine-tuning** or large-scale training of the Gr00t model.
+Such operations require **more powerful hardware**, ideally with **at least 24 GB VRAM** (e.g., RTX 4090, A6000, or A100) or access to **multi-GPU / cloud-based compute environments**.
+
+In this setup, only **inference and interaction** were tested — fine-tuning or model adaptation to the Unitree G1’s custom behavior datasets would require **high-memory GPU servers** or **NVIDIA DGX-class systems**.
+
+---
+
+## 6. References
+
+* [ROS 2 Jazzy Installation](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html)
+* [NVIDIA Isaac Gr00t Repository](https://github.com/NVIDIA/Isaac-GR00T/tree/main)
+* [NVIDIA Developer Forum – Livox MID360](https://forums.developer.nvidia.com/t/livox-mid360/283074/6)
+* [Isaac Sim ROS 2 Tutorials](https://docs.isaacsim.omniverse.nvidia.com/latest/ros2_tutorials/tutorial_ros2_rtx_lidar.html)
+* [Isaac Sim Robot Setup Tutorials](https://docs.isaacsim.omniverse.nvidia.com/5.0.0/robot_setup_tutorials/tutorial_gui_simple_robot.html)
+* [Unitree G1 User Manual (2025)](https://reliablerobotics.ai/wp-content/uploads/2025/03/G1-User-Manual_compressed.pdf)
+* [Isaac Sim Camera and Depth Sensor Assets](https://docs.isaacsim.omniverse.nvidia.com/latest/assets/usd_assets_camera_depth_sensors.html)
+* [Unitree ROS Packages](https://github.com/unitreerobotics/unitree_ros/tree/master)
+* [SensorLab Quick Start Guide (2023)](https://sensorlab.arizona.edu/sites/default/files/2023-07/Quick%20Start%20Guide.pdf)
