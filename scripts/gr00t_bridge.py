@@ -42,16 +42,20 @@ class Gr00tBridge(Node):
             "waist": ["waist_yaw_joint", "waist_roll_joint", "waist_pitch_joint"],
 
             "left_arm": ["left_shoulder_pitch_joint", "left_shoulder_roll_joint", "left_shoulder_yaw_joint", 
-                        "left_elbow_joint", "left_wrist_roll_joint", "left_wrist_pitch_joint", "left_wrist_yaw_joint"],
+                         "left_elbow_joint", 
+                         "left_wrist_roll_joint", "left_wrist_pitch_joint", "left_wrist_yaw_joint"],
 
-            "left_hand": ["left_hand_index_0_joint", "left_hand_middle_0_joint", "left_hand_thumb_0_joint", 
-                        "left_hand_index_1_joint", "left_hand_middle_1_joint", "left_hand_thumb_1_joint"], #"left_hand_thumb_2_joint"],
+            "left_hand": ["left_hand_index_0_joint", "left_hand_index_1_joint", 
+                          "left_hand_middle_0_joint", "left_hand_middle_1_joint",
+                          "left_hand_thumb_0_joint", "left_hand_thumb_1_joint"], #"left_hand_thumb_2_joint"],
 
             "right_arm": ["right_shoulder_pitch_joint", "right_shoulder_roll_joint", "right_shoulder_yaw_joint", 
-                        "right_elbow_joint", "right_wrist_roll_joint", "right_wrist_pitch_joint", "right_wrist_yaw_joint"],
+                          "right_elbow_joint", 
+                          "right_wrist_roll_joint", "right_wrist_pitch_joint", "right_wrist_yaw_joint"],
 
-            "right_hand": ["right_hand_index_0_joint", "right_hand_middle_0_joint", "right_hand_thumb_0_joint",
-                        "right_hand_index_1_joint", "right_hand_middle_1_joint", "right_hand_thumb_1_joint"], #"right_hand_thumb_2_joint"]
+            "right_hand": ["right_hand_index_0_joint", "right_hand_index_1_joint", 
+                           "right_hand_middle_0_joint", "right_hand_middle_1_joint",
+                           "right_hand_thumb_0_joint", "right_hand_thumb_1_joint"], #"right_hand_thumb_2_joint"]
         }
 
         # Subscribers
@@ -147,11 +151,11 @@ class Gr00tBridge(Node):
                 "video.ego_view": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
                 "state.left_leg": np.array([current_joint_states["left_leg"]["positions"]]),
                 "state.right_leg": np.array([current_joint_states["right_leg"]["positions"]]),
-                "state.left_arm": np.array([current_joint_states["left_arm"]["positions"]]),
-                "state.right_arm": np.array([current_joint_states["right_arm"]["positions"]]),
-                "state.left_hand": np.array([current_joint_states["left_hand"]["positions"]]),
-                "state.right_hand": np.array([current_joint_states["right_hand"]["positions"]]),
                 "state.waist": np.array([current_joint_states["waist"]["positions"]]),
+                "state.left_arm": np.array([current_joint_states["left_arm"]["positions"]]),
+                "state.left_hand": np.array([current_joint_states["left_hand"]["positions"]]),
+                "state.right_arm": np.array([current_joint_states["right_arm"]["positions"]]),
+                "state.right_hand": np.array([current_joint_states["right_hand"]["positions"]]),
                 "annotation.human.task_description": [self.instruction],
             }
 
