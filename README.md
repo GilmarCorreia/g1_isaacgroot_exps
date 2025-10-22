@@ -24,7 +24,7 @@ In cloud development:
 * Anaconda (for virtual environment management)
 * Python 3.10
 * ROS 2 Humble
-* NVIDIA L4 GPU
+* NVIDIA A100 GPU (80GB VRAM)
 
 ---
 
@@ -169,6 +169,7 @@ sudo cp /var/cuda-repo-ubuntu2204-12-4-local/cuda-*-keyring.gpg /usr/share/keyri
 sudo apt-get update
 sudo apt-get -y install cuda-toolkit-12-4
 sudo apt-get install -y cuda-drivers
+sudo reboot
 ```
 
 ##### 1.1.3.2. 12.8
@@ -207,6 +208,7 @@ conda create -n gr00t python=3.10
 conda activate gr00t
 
 cd $ISAAC_EXPS/modules/Isaac-GR00T
+sudo apt-get install ffmpeg
 pip install --upgrade setuptools
 pip install -e .[base]
 pip install --no-build-isolation flash-attn==2.7.1.post4
@@ -233,40 +235,38 @@ Download the **PhysicalAI Robotics GR00T Teleoperation** dataset for potential f
 - Test 1:
 
 ```bash
+conda activate gr00t
 cd $ISAAC_EXPS/modules/Isaac-GR00T
-conda deactivate
-conda deactivate
+pip install -U "huggingface_hub[cli]"
+hf auth login
+huggingface-cli download --repo-type dataset nvidia/PhysicalAI-Robotics-GR00T-Teleop-G1 --local-dir ./datasets/PhysicalAI-Robotics-GR00T-Teleop-G1/
+
+python scripts/load_dataset.py --dataset-path datasets/PhysicalAI-Robotics-GR00T-Teleop-G1/g1-pick-apple/ --plot-state-action
+
+dataset_list=(
+    "datasets/PhysicalAI-Robotics-GR00T-Teleop-G1/g1-pick-apple/"
+    "datasets/PhysicalAI-Robotics-GR00T-Teleop-G1/g1-pick-pear/"
+    "datasets/PhysicalAI-Robotics-GR00T-Teleop-G1/g1-pick-grapes/"
+    "datasets/PhysicalAI-Robotics-GR00T-Teleop-G1/g1-pick-starfruit/"
+)
+
+python scripts/gr00t_finetune.py --dataset-path ${dataset_list[@]} --num-gpus 1 --batch-size 95  --output-dir $ISAAC_EXPS/modules/Isaac-GR00T/checkpoints/full-g1-mix-fruits/ --data-config unitree_g1 --max-steps 15000
+
+python scripts/eval_policy.py --plot --embodiment_tag new_embodiment --model_path $ISAAC_EXPS/modules/Isaac-GR00T/checkpoints/full-g1-mix-fruits/ --data_config unitree_g1 --dataset_path datasets/PhysicalAI-Robotics-GR00T-Teleop-G1/g1-pick-apple/ --video_backend decord --modality_keys left_arm right_arm
+```
+
+- Test 2:
+
+```bash
+conda activate gr00t
+cd $ISAAC_EXPS/modules/Isaac-GR00T
 pip install -U "huggingface_hub[cli]"
 hf auth login
 huggingface-cli download --repo-type dataset unitreerobotics/G1_BlockStacking_Dataset --local-dir ./datasets/G1_BlockStacking_Dataset/
 cp examples/UnitreeG1/unitree_g1_blocks__modality.json datasets/G1_BlockStacking_Dataset/meta/modality.json
 
-conda activate gr00t
-python scripts/load_dataset.py --data_path /datasets/G1_BlockStacking_Dataset/ --embodiment_tag new_embodiment --plot-state-action
-```
-- Test 2:
 
-```bash
-cd $ISAAC_EXPS/modules/Isaac-GR00T
-conda deactivate
-conda deactivate
-pip install -U "huggingface_hub[cli]"
-hf auth login
-huggingface-cli download --repo-type dataset nvidia/PhysicalAI-Robotics-GR00T-Teleop-G1 --local-dir ./datasets/
-
-conda activate gr00t
-python scripts/load_dataset.py --dataset-path datasets/g1-pick-apple/ --plot-state-action
-
-dataset_list=(
-    "datasets/g1-pick-apple/"
-    "datasets/g1-pick-pear/"
-    "datasets/g1-pick-grapes/"
-    "datasets/g1-pick-starfruit/"
-)
-
-python scripts/gr00t_finetune.py --dataset-path ${dataset_list[@]} --num-gpus 1 --batch-size 95  --output-dir $ISAAC_EXPS/modules/Isaac-GR00T/checkpoints/full-g1-mix-fruits/ --data-config unitree_g1 --max-steps 15000
-
-python scripts/eval_policy.py --plot --embodiment_tag new_embodiment --model_path $ISAAC_EXPS/modules/Isaac-GR00T/checkpoints/full-g1-mix-fruits/ --data_config unitree_g1 --dataset_path datasets/g1-pick-apple/ --video_backend decord --modality_keys left_arm right_arm
+python scripts/load_dataset.py --dataset-path /datasets/G1_BlockStacking_Dataset/ --embodiment_tag new_embodiment --plot-state-action
 ```
 ---
 
@@ -330,7 +330,10 @@ Open a terminal and run:
 ```bash
 conda activate gr00t
 cd $ISAAC_EXPS/modules/Isaac-GR00T
-python scripts/inference_service.py --model-path nvidia/GR00T-N1.5-3B --data_config unitree_g1_full_body --http_server --server
+#python scripts/inference_service.py --model-path nvidia/GR00T-N1.5-3B --data_config unitree_g1_full_body --http_server --server
+python scripts/inference_service.py --model-path nvidia/GR00T-N1.5-3B --host 0.0.0.0 --http_server --server
+
+python scripts/inference_service.py --embodiment_tag new_embodiment --model_path $ISAAC_EXPS/modules/Isaac-GR00T/checkpoints/full-g1-mix-fruits/ --data_config unitree_g1 --host 0.0.0.0 --http_server --server
 ```
 
 2. **Start the ROS 2 Bridge:** In another terminal, run:
@@ -338,7 +341,7 @@ python scripts/inference_service.py --model-path nvidia/GR00T-N1.5-3B --data_con
 ```bash
 conda deactivate
 conda deactivate
-ros2 run g1_isaacgroot_exps gr00t_bridge.py
+ros2 run g1_isaacgroot_exps gr00t_bridge.py --ros-args -p data_config:=unitree_g1
 ```
 
 3. **Send high-level commands to the robot:** In another terminal, use the following command to instruct the robot:

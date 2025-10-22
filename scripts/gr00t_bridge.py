@@ -18,7 +18,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 #from gr00t.eval.robot import RobotInferenceClient
 
-GR00T_HOST = "localhost" 
+GR00T_HOST = "34.60.197.197"#"localhost" 
 GR00T_PORT = "5555" 
 
 class Gr00tBridge(Node):
@@ -30,33 +30,69 @@ class Gr00tBridge(Node):
         super().__init__('gr00t_bridge')
         self.bridge = CvBridge()
         self.latest_image = None
-        self.create_joints_vector()
 
-        self.g1_refer = {
-            "left_leg": ["left_hip_pitch_joint", "left_hip_roll_joint", "left_hip_yaw_joint", 
-                        "left_knee_joint", "left_ankle_pitch_joint", "left_ankle_roll_joint"],
+        self.declare_parameter("data_config", "fourier_gr1_arms_only")
+        self.data_config = self.get_parameter("data_config").get_parameter_value().string_value
+        print(f"Using data_config: {self.data_config}")
 
-            "right_leg": ["right_hip_pitch_joint", "right_hip_roll_joint", "right_hip_yaw_joint", 
-                        "right_knee_joint", "right_ankle_pitch_joint", "right_ankle_roll_joint"],
+        
 
-            "waist": ["waist_yaw_joint", "waist_roll_joint", "waist_pitch_joint"],
+        if self.data_config == "unitree_g1" or self.data_config == "unitree_g1_full_body":
+            self.g1_refer = {
+                "left_leg": ["left_hip_pitch_joint", "left_hip_roll_joint", "left_hip_yaw_joint", 
+                            "left_knee_joint", "left_ankle_pitch_joint", "left_ankle_roll_joint"],
 
-            "left_arm": ["left_shoulder_pitch_joint", "left_shoulder_roll_joint", "left_shoulder_yaw_joint", 
-                         "left_elbow_joint", 
-                         "left_wrist_roll_joint", "left_wrist_pitch_joint", "left_wrist_yaw_joint"],
+                "right_leg": ["right_hip_pitch_joint", "right_hip_roll_joint", "right_hip_yaw_joint", 
+                            "right_knee_joint", "right_ankle_pitch_joint", "right_ankle_roll_joint"],
 
-            "left_hand": ["left_hand_index_0_joint", "left_hand_index_1_joint", 
-                          "left_hand_middle_0_joint", "left_hand_middle_1_joint",
-                          "left_hand_thumb_0_joint", "left_hand_thumb_1_joint"], #"left_hand_thumb_2_joint"],
+                "waist": ["waist_yaw_joint", "waist_roll_joint", "waist_pitch_joint"],
 
-            "right_arm": ["right_shoulder_pitch_joint", "right_shoulder_roll_joint", "right_shoulder_yaw_joint", 
-                          "right_elbow_joint", 
-                          "right_wrist_roll_joint", "right_wrist_pitch_joint", "right_wrist_yaw_joint"],
+                "left_arm": ["left_shoulder_pitch_joint", "left_shoulder_roll_joint", "left_shoulder_yaw_joint", 
+                            "left_elbow_joint", 
+                            "left_wrist_roll_joint", "left_wrist_pitch_joint", "left_wrist_yaw_joint"],
 
-            "right_hand": ["right_hand_index_0_joint", "right_hand_index_1_joint", 
-                           "right_hand_middle_0_joint", "right_hand_middle_1_joint",
-                           "right_hand_thumb_0_joint", "right_hand_thumb_1_joint"], #"right_hand_thumb_2_joint"]
-        }
+                "left_hand": ["left_hand_index_0_joint", "left_hand_index_1_joint", 
+                            "left_hand_middle_0_joint", "left_hand_middle_1_joint",
+                            "left_hand_thumb_0_joint", "left_hand_thumb_1_joint", "left_hand_thumb_2_joint"],
+
+                "right_arm": ["right_shoulder_pitch_joint", "right_shoulder_roll_joint", "right_shoulder_yaw_joint", 
+                            "right_elbow_joint", 
+                            "right_wrist_roll_joint", "right_wrist_pitch_joint", "right_wrist_yaw_joint"],
+
+                "right_hand": ["right_hand_index_0_joint", "right_hand_index_1_joint", 
+                            "right_hand_middle_0_joint", "right_hand_middle_1_joint",
+                            "right_hand_thumb_0_joint", "right_hand_thumb_1_joint", "right_hand_thumb_2_joint"]
+            }
+
+            self.create_joints_vector(6,3,7,7)
+        elif self.data_config == "fourier_gr1_arms_only":
+            self.create_joints_vector(6,3,7,6)  
+
+            self.g1_refer = {
+                "left_leg": ["left_hip_pitch_joint", "left_hip_roll_joint", "left_hip_yaw_joint", 
+                            "left_knee_joint", "left_ankle_pitch_joint", "left_ankle_roll_joint"],
+
+                "right_leg": ["right_hip_pitch_joint", "right_hip_roll_joint", "right_hip_yaw_joint", 
+                            "right_knee_joint", "right_ankle_pitch_joint", "right_ankle_roll_joint"],
+
+                "waist": ["waist_yaw_joint", "waist_pitch_joint", "waist_roll_joint"],
+
+                "left_arm": ["left_shoulder_pitch_joint", "left_shoulder_roll_joint", "left_shoulder_yaw_joint", 
+                            "left_elbow_joint", 
+                            "left_wrist_yaw_joint", "left_wrist_roll_joint", "left_wrist_pitch_joint"],
+
+                "left_hand": ["left_hand_middle_0_joint", "left_hand_middle_1_joint",
+                              "left_hand_index_0_joint", "left_hand_index_1_joint",
+                              "left_hand_thumb_0_joint", "left_hand_thumb_1_joint"],
+
+                "right_arm": ["right_shoulder_pitch_joint", "right_shoulder_roll_joint", "right_shoulder_yaw_joint", 
+                            "right_elbow_joint", 
+                            "right_wrist_yaw_joint", "right_wrist_roll_joint", "right_wrist_pitch_joint"],
+
+                "right_hand": ["right_hand_middle_0_joint", "right_hand_middle_1_joint",
+                                "right_hand_index_0_joint", "right_hand_index_1_joint", 
+                                "right_hand_thumb_0_joint", "right_hand_thumb_1_joint"]
+            }      
 
         # Subscribers
         self.image_sub = self.create_subscription(
@@ -104,8 +140,8 @@ class Gr00tBridge(Node):
             self.latest_image = cv2.resize(cvb, (256, 256), interpolation=cv2.INTER_AREA)
 
             #show image in real time
-            # cv2.imshow("Image", self.latest_image)
-            # cv2.waitKey(1)
+            #cv2.imshow("Image", self.latest_image)
+            #cv2.waitKey(1)
             
         except Exception as e:
             self.get_logger().warn(f"cv_bridge fail: {e}")
@@ -146,18 +182,50 @@ class Gr00tBridge(Node):
             #     result = Instruction.Result()
             #     result.success = False
             #     return result
+            
+            # fourier_gr1_arms_only
 
-            obs = {
-                "video.ego_view": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
-                "state.left_leg": np.array([current_joint_states["left_leg"]["positions"]]),
-                "state.right_leg": np.array([current_joint_states["right_leg"]["positions"]]),
-                "state.waist": np.array([current_joint_states["waist"]["positions"]]),
-                "state.left_arm": np.array([current_joint_states["left_arm"]["positions"]]),
-                "state.left_hand": np.array([current_joint_states["left_hand"]["positions"]]),
-                "state.right_arm": np.array([current_joint_states["right_arm"]["positions"]]),
-                "state.right_hand": np.array([current_joint_states["right_hand"]["positions"]]),
-                "annotation.human.task_description": [self.instruction],
-            }
+            if self.data_config == "fourier_gr1_arms_only":
+                obs = {
+                    "video.ego_view": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
+                    "state.waist": np.array([current_joint_states["waist"]["positions"]]),
+                    "state.left_arm": np.array([current_joint_states["left_arm"]["positions"]]),
+                    "state.left_hand": np.array([current_joint_states["left_hand"]["positions"]]),
+                    "state.right_arm": np.array([current_joint_states["right_arm"]["positions"]]),
+                    "state.right_hand": np.array([current_joint_states["right_hand"]["positions"]]),
+                    "annotation.human.action.task_description": [self.instruction],
+                }
+            
+            # unitree_g1
+            elif self.data_config == "unitree_g1":
+                obs = {
+                    "video.cam_right_high": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
+                    "video.cam_left_wrist": np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
+                    "video.cam_right_wrist": np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
+                    #"state.left_leg": np.array([current_joint_states["left_leg"]["positions"]]),
+                    #"state.right_leg": np.array([current_joint_states["right_leg"]["positions"]]),
+                    #"state.waist": np.array([current_joint_states["waist"]["positions"]]),
+                    "state.left_arm": np.array([current_joint_states["left_arm"]["positions"]]),
+                    "state.left_hand": np.array([current_joint_states["left_hand"]["positions"]]),
+                    "state.right_arm": np.array([current_joint_states["right_arm"]["positions"]]),
+                    "state.right_hand": np.array([current_joint_states["right_hand"]["positions"]]),
+                    "annotation.human.task_description": [self.instruction],
+                }
+
+            # unitree_g1_full_body
+            elif self.data_config == "unitree_g1_full_body":
+                obs = {
+                    "video.ego_view": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
+                    "state.left_leg": np.array([current_joint_states["left_leg"]["positions"]]),
+                    "state.right_leg": np.array([current_joint_states["right_leg"]["positions"]]),
+                    "state.waist": np.array([current_joint_states["waist"]["positions"]]),
+                    "state.left_arm": np.array([current_joint_states["left_arm"]["positions"]]),
+                    "state.left_hand": np.array([current_joint_states["left_hand"]["positions"]]),
+                    "state.right_arm": np.array([current_joint_states["right_arm"]["positions"]]),
+                    "state.right_hand": np.array([current_joint_states["right_hand"]["positions"]]),
+                    "annotation.human.task_description": [self.instruction],
+                }
+
 
             feedback_msg.status = "Querying GR00T model..."
             goal_handle.publish_feedback(feedback_msg)
@@ -169,7 +237,7 @@ class Gr00tBridge(Node):
             joint_positions = None
 
             for key, value in action.items():
-                #print(f"Action: {key}: {value.shape}")
+                print(f"Action: {key}: {value.shape}")
 
                 # # Create a graph
                 # plt.figure(figsize=(10,6))
@@ -190,8 +258,8 @@ class Gr00tBridge(Node):
                 joint_names += self.g1_refer[action]
                 joint_positions = value if joint_positions is None else np.hstack((joint_positions, value))
 
-            # print(f"Joint Names: {joint_names}")
-            # print(f"Joint Positions: {joint_positions}")
+            #print(f"Joint Names: {joint_names}")
+            #print(f"Joint Positions: {joint_positions}")
             # print(joint_positions.shape)
 
             feedback_msg.status = "Publishing joint commands..."
@@ -204,7 +272,7 @@ class Gr00tBridge(Node):
                 # print(f"Publishing Joint Positions: {joint_position}")
                 # print(joint_position.shape)
                 # print(joint_position.tolist())
-
+                #print(f"Publishing Joint Positions: {joint_position}")
                 msg.position = joint_position.tolist()
                 self.pub_cmd.publish(msg)
                 time.sleep(0.1)  # simula streaming de comandos
@@ -271,42 +339,42 @@ class Gr00tBridge(Node):
     # ########################## METHODS #########################
     # ############################################################
 
-    def create_joints_vector(self):
+    def create_joints_vector(self, legs_joints=6, waist_joints=3, arm_joints=7, hand_joints=6):
         self.latest_joints = {
             "left_leg": {
-                "positions": np.zeros(6),
-                "velocities": np.zeros(6),
-                "efforts": np.zeros(6)
+                "positions": np.zeros(legs_joints),
+                "velocities": np.zeros(legs_joints),
+                "efforts": np.zeros(legs_joints)
             },
             "right_leg": {
-                "positions": np.zeros(6),
-                "velocities": np.zeros(6),
-                "efforts": np.zeros(6)
+                "positions": np.zeros(legs_joints),
+                "velocities": np.zeros(legs_joints),
+                "efforts": np.zeros(legs_joints)
             },
             "waist": {
-                "positions": np.zeros(3),
-                "velocities": np.zeros(3),
-                "efforts": np.zeros(3)
+                "positions": np.zeros(waist_joints),
+                "velocities": np.zeros(waist_joints),
+                "efforts": np.zeros(waist_joints)
             },
             "left_arm": {
-                "positions": np.zeros(7),
-                "velocities": np.zeros(7),
-                "efforts": np.zeros(7)
+                "positions": np.zeros(arm_joints),
+                "velocities": np.zeros(arm_joints),
+                "efforts": np.zeros(arm_joints)
             },
             "left_hand": {
-                "positions": np.zeros(6),
-                "velocities": np.zeros(6),
-                "efforts": np.zeros(6)
+                "positions": np.zeros(hand_joints),
+                "velocities": np.zeros(hand_joints),
+                "efforts": np.zeros(hand_joints)
             },
             "right_arm": {
-                "positions": np.zeros(7),
-                "velocities": np.zeros(7),
-                "efforts": np.zeros(7)
+                "positions": np.zeros(arm_joints),
+                "velocities": np.zeros(arm_joints),
+                "efforts": np.zeros(arm_joints)
             },
             "right_hand": {
-                "positions": np.zeros(6),
-                "velocities": np.zeros(6),
-                "efforts": np.zeros(6)
+                "positions": np.zeros(hand_joints),
+                "velocities": np.zeros(hand_joints),
+                "efforts": np.zeros(hand_joints)
             }
         }
 
