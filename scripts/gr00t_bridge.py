@@ -10,6 +10,7 @@ from g1_isaacgroot_exps.action import Instruction
 
 # Dev Imports
 import cv2
+import copy
 import json
 import time
 import base64
@@ -18,7 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 #from gr00t.eval.robot import RobotInferenceClient
 
-GR00T_HOST = "34.60.197.197"#"localhost" 
+GR00T_HOST = "35.225.250.207"#"localhost" 
 GR00T_PORT = "5555" 
 
 class Gr00tBridge(Node):
@@ -93,7 +94,10 @@ class Gr00tBridge(Node):
                                 "right_hand_index_0_joint", "right_hand_index_1_joint", 
                                 "right_hand_thumb_0_joint", "right_hand_thumb_1_joint"]
             }      
-
+        else:
+            self.get_logger().error(f"Data config '{self.data_config}' not supported. Choose between 'fourier_gr1_arms_only', 'unitree_g1' or 'unitree_g1_full_body'.")
+            return
+        
         # Subscribers
         self.image_sub = self.create_subscription(
             Image, 
@@ -137,6 +141,7 @@ class Gr00tBridge(Node):
     def cb_image(self, msg: Image):
         try:
             cvb = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+            cvb = cv2.normalize(cvb, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
 
             if self.data_config == "unitree_g1" or self.data_config == "unitree_g1_full_body":
                 image_res = (640, 480)
@@ -178,16 +183,16 @@ class Gr00tBridge(Node):
         goal_handle.publish_feedback(feedback_msg)
 
         try:
-            current_img = self.latest_image
-            current_joint_states = self.latest_joints
+            current_img = copy.deepcopy(self.latest_image)
+            current_joint_states = copy.deepcopy(self.latest_joints)
 
             # VERIFY THE SENSORS DATA
-            # if current_img is None or current_joint_states is None:
-            #     self.get_logger().warn("Sensors not updated.")
-            #     goal_handle.abort()
-            #     result = Instruction.Result()
-            #     result.success = False
-            #     return result
+            if current_img is None or current_joint_states is None:
+                self.get_logger().warn("Sensors not updated.")
+                goal_handle.abort()
+                result = Instruction.Result()
+                result.success = False
+                return result
             
             # fourier_gr1_arms_only
 
@@ -204,8 +209,12 @@ class Gr00tBridge(Node):
             
             # unitree_g1
             elif self.data_config == "unitree_g1":
+                print(np.array([current_img]).shape)
+                #cv2.imshow("Image", current_img)
+                #cv2.waitKey(1)
                 obs = {
-                    "video.rs_view": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 640, 480, 3), dtype=np.uint8),
+                    "video.rs_view": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 480, 640, 3), dtype=np.uint8),
+                    #"video.cam_right_high": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 480, 640, 3), dtype=np.uint8),
                     #"video.cam_left_wrist": np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
                     #"video.cam_right_wrist": np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
                     #"state.left_leg": np.array([current_joint_states["left_leg"]["positions"]]),
@@ -221,7 +230,7 @@ class Gr00tBridge(Node):
             # unitree_g1_full_body
             elif self.data_config == "unitree_g1_full_body":
                 obs = {
-                    "video.rs_view": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 640, 480, 3), dtype=np.uint8),
+                    "video.rs_view": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 480, 640, 3), dtype=np.uint8),
                     "state.left_leg": np.array([current_joint_states["left_leg"]["positions"]]),
                     "state.right_leg": np.array([current_joint_states["right_leg"]["positions"]]),
                     "state.waist": np.array([current_joint_states["waist"]["positions"]]),
@@ -231,6 +240,12 @@ class Gr00tBridge(Node):
                     "state.right_hand": np.array([current_joint_states["right_hand"]["positions"]]),
                     "annotation.human.task_description": [self.instruction],
                 }
+            else:
+                self.get_logger().error(f"Data config '{self.data_config}' not supported.")
+                goal_handle.abort()
+                result = Instruction.Result()
+                result.success = False
+                return result
 
 
             feedback_msg.status = "Querying GR00T model..."

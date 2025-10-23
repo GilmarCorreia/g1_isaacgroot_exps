@@ -328,6 +328,7 @@ Data streams such as joint positions and RGB camera output are visualized as sho
 Open a terminal and run:
 
 ```bash
+eval "$(/home/gilmar/anaconda3/bin/conda shell.bash hook)"
 conda activate gr00t
 cd $ISAAC_EXPS/modules/Isaac-GR00T
 #python scripts/inference_service.py --model-path nvidia/GR00T-N1.5-3B --data_config unitree_g1_full_body --http_server --server
