@@ -137,7 +137,13 @@ class Gr00tBridge(Node):
     def cb_image(self, msg: Image):
         try:
             cvb = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-            self.latest_image = cv2.resize(cvb, (256, 256), interpolation=cv2.INTER_AREA)
+
+            if self.data_config == "unitree_g1" or self.data_config == "unitree_g1_full_body":
+                image_res = (640, 480)
+            elif self.data_config == "fourier_gr1_arms_only":
+                image_res = (256, 256)
+
+            self.latest_image = cv2.resize(cvb, image_res, interpolation=cv2.INTER_AREA)
 
             #show image in real time
             #cv2.imshow("Image", self.latest_image)
@@ -199,9 +205,9 @@ class Gr00tBridge(Node):
             # unitree_g1
             elif self.data_config == "unitree_g1":
                 obs = {
-                    "video.cam_right_high": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
-                    "video.cam_left_wrist": np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
-                    "video.cam_right_wrist": np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
+                    "video.rs_view": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 640, 480, 3), dtype=np.uint8),
+                    #"video.cam_left_wrist": np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
+                    #"video.cam_right_wrist": np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
                     #"state.left_leg": np.array([current_joint_states["left_leg"]["positions"]]),
                     #"state.right_leg": np.array([current_joint_states["right_leg"]["positions"]]),
                     #"state.waist": np.array([current_joint_states["waist"]["positions"]]),
@@ -215,7 +221,7 @@ class Gr00tBridge(Node):
             # unitree_g1_full_body
             elif self.data_config == "unitree_g1_full_body":
                 obs = {
-                    "video.ego_view": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 256, 256, 3), dtype=np.uint8),
+                    "video.rs_view": np.array([current_img]) if current_img is not None else np.random.randint(0, 256, (1, 640, 480, 3), dtype=np.uint8),
                     "state.left_leg": np.array([current_joint_states["left_leg"]["positions"]]),
                     "state.right_leg": np.array([current_joint_states["right_leg"]["positions"]]),
                     "state.waist": np.array([current_joint_states["waist"]["positions"]]),
@@ -267,12 +273,13 @@ class Gr00tBridge(Node):
 
             msg = JointState()
             msg.name = joint_names
+            print(f"Publishing Joint Names: {joint_names}")
+            print(f"Last Positions: {joint_positions[-1,:]}")
 
             for joint_position in joint_positions:
                 # print(f"Publishing Joint Positions: {joint_position}")
                 # print(joint_position.shape)
                 # print(joint_position.tolist())
-                #print(f"Publishing Joint Positions: {joint_position}")
                 msg.position = joint_position.tolist()
                 self.pub_cmd.publish(msg)
                 time.sleep(0.1)  # simula streaming de comandos
