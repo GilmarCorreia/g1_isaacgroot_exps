@@ -292,8 +292,8 @@ ROS 2 topics were created to bridge Isaac Sim with the robot’s actuators and s
 
 <p align="center">
   <img src="images/rviz.png" alt="RViz Visualization">
+  <video src="images/output.mp4" width="1080" height="720" controls></video>
 </p>
-![Joint Command](images/output.mp4)
 
 To visualize the robot and its sensor data inside RViz, run:
 
