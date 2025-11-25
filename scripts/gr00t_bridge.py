@@ -19,7 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 #from gr00t.eval.robot import RobotInferenceClient
 
-GR00T_HOST = "35.225.250.207"#"localhost" 
+GR00T_HOST = "34.41.27.173"#"localhost" 
 GR00T_PORT = "5555" 
 
 class Gr00tBridge(Node):
@@ -151,8 +151,8 @@ class Gr00tBridge(Node):
             self.latest_image = cv2.resize(cvb, image_res, interpolation=cv2.INTER_AREA)
 
             #show image in real time
-            #cv2.imshow("Image", self.latest_image)
-            #cv2.waitKey(1)
+            cv2.imshow("Image", self.latest_image)
+            cv2.waitKey(1)
             
         except Exception as e:
             self.get_logger().warn(f"cv_bridge fail: {e}")
